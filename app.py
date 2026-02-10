@@ -88,6 +88,21 @@ if st.session_state.edit_index is not None:
     if col2.button("Cancel"):
         st.session_state.edit_index = None
         st.rerun()
+
+# -------- Total --------
+st.subheader("Total Spending")
+st.metric(label="₹ Total", value=int(df["Amount"].sum()))
+
+# -------- Chart --------
+st.subheader("Category Wise Spending")
+
+if not df.empty:
+    chart_data = df.groupby("Category")["Amount"].sum()
+
+    fig, ax = plt.subplots()
+    ax.pie(chart_data, labels=chart_data.index, autopct="%1.1f%%")
+    st.pyplot(fig)
+
 # -------- Download --------
 st.download_button(
     "Download Expenses CSV",
