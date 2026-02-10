@@ -34,24 +34,60 @@ if st.sidebar.button("Add Expense"):
     df.to_csv(FILE, index=False)
     st.sidebar.success("Expense Added!")
 
-# -------- Show Data --------
+# -------- Show Data with Edit/Delete --------
 st.subheader("📊 All Expenses")
-st.dataframe(df, use_container_width=True)
 
-# -------- Total --------
-st.subheader("Total Spending")
-st.metric(label="₹ Total", value=int(df["Amount"].sum()))
+if "edit_index" not in st.session_state:
+    st.session_state.edit_index = None
 
-# -------- Chart --------
-st.subheader("Category Wise Spending")
+for index, row in df.iterrows():
 
-if not df.empty:
-    chart_data = df.groupby("Category")["Amount"].sum()
+    col1, col2, col3, col4, col5, col6 = st.columns([2,2,2,3,1,1])
 
-    fig, ax = plt.subplots()
-    ax.pie(chart_data, labels=chart_data.index, autopct="%1.1f%%")
-    st.pyplot(fig)
+    col1.write(row["Date"])
+    col2.write(row["Amount"])
+    col3.write(row["Category"])
+    col4.write(row["Description"])
 
+    # Edit Button
+    if col5.button("Edit", key=f"edit{index}"):
+        st.session_state.edit_index = index
+
+    # Delete Button
+    if col6.button("Delete", key=f"delete{index}"):
+        df = df.drop(index)
+        df.to_csv(FILE, index=False)
+        st.rerun()
+
+
+# -------- Edit Form --------
+if st.session_state.edit_index is not None:
+
+    st.subheader("✏️ Edit Expense")
+
+    i = st.session_state.edit_index
+
+    edit_date = st.date_input("Date", pd.to_datetime(df.loc[i, "Date"]))
+    edit_amount = st.number_input("Amount", value=float(df.loc[i, "Amount"]))
+    edit_category = st.selectbox(
+        "Category",
+        ["Food","Travel","Shopping","Bills","Other"],
+        index=["Food","Travel","Shopping","Bills","Other"].index(df.loc[i, "Category"])
+    )
+    edit_desc = st.text_input("Description", df.loc[i, "Description"])
+
+    col1, col2 = st.columns(2)
+
+    if col1.button("Update Expense"):
+        df.loc[i] = [edit_date, edit_amount, edit_category, edit_desc]
+        df.to_csv(FILE, index=False)
+        st.session_state.edit_index = None
+        st.success("Updated Successfully!")
+        st.rerun()
+
+    if col2.button("Cancel"):
+        st.session_state.edit_index = None
+        st.rerun()
 # -------- Download --------
 st.download_button(
     "Download Expenses CSV",
