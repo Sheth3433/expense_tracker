@@ -61,7 +61,7 @@ if st.sidebar.button("Add Expense"):
 st.subheader("💵 Total Spending")
 
 total = df["Amount"].sum()
-st.metric(f"₹ {int(total)}")
+st.metric("",f"₹ {int(total)}")
 
 
 # ================= BUDGET =================
@@ -195,4 +195,5 @@ st.download_button(
     file_name="expenses.csv",
     mime="text/csv"
 )
+
 
